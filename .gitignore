@@ -1,0 +1,17 @@
+# run artifacts — these belong to the user's data, never to the repo
+_Organize_Log.txt
+_Needs_My_Review/
+_For Deletion*/
+*.jsonl
+plan.tsv
+hashes*.txt
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# python
+__pycache__/
+*.pyc
+.venv/
