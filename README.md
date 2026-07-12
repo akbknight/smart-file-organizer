@@ -5,7 +5,9 @@
 [![OCR](https://img.shields.io/badge/scanned%20PDFs-OCR%20supported-orange.svg)](#what-it-does)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Point an agent at ten years of Downloads chaos. Get back a clean, person-by-person document archive — every file read, renamed, and filed by what's actually inside it. Nothing deleted, ever.**
+**Point an agent at years of folder chaos — a Downloads dump, a Desktop, an old backup drive, a USB stick. Get back a clean, person-by-person document archive — every file read, renamed, and filed by what's actually inside it. Nothing deleted, ever.**
+
+**Works on any folder with any name, new or old.** The folder is just a config value; nothing about the skill is tied to "Downloads" — that's simply the classic worst offender.
 
 Most "file organizers" sort by extension and filename. That's why they fail: `result.pdf` tells you nothing, `scan0001.pdf` even less, and the prescription with a doctor's name in huge letters doesn't belong to the doctor. This skill makes the agent open every document, OCR the scanned ones, work out *what it is* and *whose it is*, and file it accordingly.
 
@@ -20,6 +22,7 @@ Distilled from organizing a real 100,000-file folder: every rule in the skill ex
 | **Deep scan + OCR** | Detects image-only PDFs and runs OCR so scans are classified by their contents, not their filenames |
 | **Context-aware renaming** | `YYYY-MM-DD_DocumentType_Subject.ext`, using the date printed *inside* the document |
 | **Entity resolution** | Routes by patient — not doctor. Applicant — not university. Account holder — not bank. A parent's name on your certificate doesn't make it their file |
+| **Dynamic people discovery** | No fixed family list needed — when a document's true subject is a new person, their folder is created on the spot and reported for your confirmation |
 | **Alias handling** | One person under two official names? One folder titled with both, filenames untouched |
 | **Auto-routing** | Creates per-person subfolders on demand and files each document under its true owner |
 | **Hash-verified dedup** | Byte-identical copies are found by checksum, the best-named original kept, and every copy tracked in a checklist |
@@ -31,10 +34,10 @@ Distilled from organizing a real 100,000-file folder: every rule in the skill ex
 ```bash
 git clone https://github.com/<your-username>/smart-file-organizer.git
 cd smart-file-organizer
-python3 tools/preflight.py ~/Downloads   # check tooling + estimate OCR workload
+python3 tools/preflight.py /path/to/any/messy/folder   # check tooling + estimate OCR workload
 ```
 
-1. Open **`organizer_skill.md`** and fill in the config table — your name, source folder, destination, and (optionally) known family members and their aliases. See [`examples/config.example.md`](examples/config.example.md) for a filled-in sample.
+1. Open **`organizer_skill.md`** and fill in the config table — your name, the folder to organize (any folder, any name), destination, and (optionally) known family members and their aliases. See [`examples/config.example.md`](examples/config.example.md) for a filled-in sample.
 2. Load the skill into your agent framework of choice (drop it into your skills folder, or paste it as the task brief) and point it at the folder.
 3. The agent scans first, shows you a summary, and asks its structural questions **in one batch** before moving anything.
 4. When it finishes, read `_Organize_Log.txt` (every move), `_Needs_My_Review/` (the honest "I wasn't sure" pile), and `_For Deletion (Empty Folders)/` (retired empty shells — deleting is *your* job, by design).
@@ -47,6 +50,8 @@ python3 tools/preflight.py ~/Downloads   # check tooling + estimate OCR workload
 - Python 3.8+ for the preflight script and office-file parsing
 
 ## Before / after
+
+Shown with a Downloads folder — but the source can be any folder you name in the config.
 
 ```
 BEFORE                                      AFTER
@@ -78,6 +83,7 @@ Downloads/                                  Downloads/
 | Nothing is guessed | Genuine two-folder conflicts stop and ask; unknowns go to `_Needs_My_Review` with reasons |
 | Everything is traceable | Per-move logging, flushed immediately; interrupted runs resume without duplicating work |
 | Code stays intact | Repositories and package folders move as sealed units — never reorganized internally |
+| Nothing outside scope | The agent works only inside the folders you configure — no default locations, no wandering |
 
 ## Repository layout
 
@@ -90,6 +96,9 @@ LICENSE                     MIT
 ```
 
 ## FAQ
+
+**Is it only for the Downloads folder?**
+No. Any folder, any name, any age — Downloads, Desktop, `D:\old-laptop-dump`, an external drive, a network share. The source folder is a config value, and the skill explicitly forbids the agent from assuming a default location or stepping outside the paths you set.
 
 **Does my data leave my machine?**
 The skill itself sends nothing anywhere — it's a procedure executed by whatever agent runtime *you* choose, on folders *you* point it at. Pick a runtime whose privacy posture you trust; documents this personal deserve that diligence.

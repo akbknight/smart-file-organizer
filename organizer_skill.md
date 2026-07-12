@@ -1,8 +1,8 @@
 # Skill: Smart File Organizer
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Type:** Agent skill / operating procedure
-**Purpose:** Deep-organize a messy folder of personal documents into a precise, person-centric folder structure — with content reading, OCR, deduplication, context-aware renaming, and entity resolution.
+**Purpose:** Deep-organize any messy folder of personal documents into a precise, person-centric folder structure — with content reading, OCR, deduplication, context-aware renaming, and entity resolution.
 
 ---
 
@@ -13,10 +13,12 @@ Fill these in before running. The agent must ask for any value that is missing.
 | Placeholder | Meaning | Example |
 |---|---|---|
 | `[USER_PRIMARY_NAME]` | The owner of the documents. Their files form the main tree. | `Jordan Rivera` |
-| `[SOURCE_MESSY_FOLDER]` | The folder to organize. | `~/Downloads` |
+| `[SOURCE_MESSY_FOLDER]` | The folder to organize — **any folder, any name, new or old**: a Downloads dump, a Desktop, `D:\Old-Laptop-Backup`, a USB-stick copy, a network share. | `~/Downloads`, `E:\2019_backup\stuff` |
 | `[DESTINATION_ROOT_FOLDER]` | Where the organized structure is built (may equal the source). | `~/Downloads` |
 | `[RELATIVES_FOLDER_NAME]` | Folder for documents belonging to other people. | `Family Docs` |
 | `[KNOWN_PEOPLE]` | Optional list of expected family/associates and known name aliases. | `Sam Rivera; Dana Rivera (a.k.a. D. K. Rivera)` |
+
+**Scope is defined by the config, not by convention.** The skill operates *only* inside `[SOURCE_MESSY_FOLDER]` and `[DESTINATION_ROOT_FOLDER]` as the user gives them. Never assume a default location such as "Downloads," never substitute a folder the user didn't name, and never touch anything outside the configured paths. If the source folder isn't specified, **ask** — don't guess. The folder's name carries no meaning; classify by contents, not by what the folder is called.
 
 ---
 
@@ -63,6 +65,7 @@ The person whose name is *biggest on the page* is often not the owner.
 * **Applicant vs. issuer:** certificates, visas, admissions and offers belong to the applicant/holder, not the institution.
 * **Account holder vs. bank:** statements and balance certificates belong to the account holder printed on them — verify by reading, not by which folder they were found in.
 * **Relational name fields:** many documents (especially South Asian ones) print a father's/mother's/spouse's name on someone else's certificate. A parent's name on a marksheet does **not** make it the parent's document.
+* **New people, discovered dynamically:** don't rely on `[KNOWN_PEOPLE]` being complete. When a document's true subject is a person not yet seen, create their folder under `[RELATIVES_FOLDER_NAME]` on the spot — after sanity-checking the name is a real subject (not a provider, author, official, or an OCR misread). List every newly discovered person in the final report for the user to confirm.
 * **Aliases:** one person may appear under different official names on different documents. If evidence suggests two names are the same person, **ask the user**; on confirmation, use one folder titled with both names — `Dana Rivera (D. K. Rivera)` style — and leave individual file names untouched so each file still matches the name printed on the physical document.
 * **Multi-subject bundles:** a single PDF containing several people's documents (e.g., a family's bank certificates compiled as visa evidence) is routed by its *purpose*, not split arbitrarily — e.g., to the visa-evidence folder — with all subjects named in the filename.
 * **Media metadata beats labels:** for DICOM/radiology discs, read the embedded patient tag rather than trusting the folder or zip name.
@@ -87,11 +90,11 @@ Standard format: `YYYY-MM-DD_DocumentType_Subject.ext`
 
 1. Move now-empty legacy folders into the holding folder (rule 1). Never delete them yourself.
 2. Re-count files with identical rules as Phase 1 and reconcile. Investigate every discrepancy before reporting; distinguish your own actions from external activity.
-3. Final report: a per-folder count table, the "current vs. archived" decisions made for versioned documents, every item left in `_Needs_My_Review` with a one-line reason, and every entity-resolution judgment call (aliases merged, misfiled documents corrected).
+3. Final report: a per-folder count table, the "current vs. archived" decisions made for versioned documents, every item left in `_Needs_My_Review` with a one-line reason, every entity-resolution judgment call (aliases merged, misfiled documents corrected), and every newly discovered person.
 
 ## Operational notes
 
 * Work in **resumable batches** with per-item logging flushed immediately — long runs get interrupted; a re-run must skip completed work instead of redoing or duplicating it.
 * Set tight subprocess timeouts on text extraction and OCR (a single corrupt PDF must not stall the run); mark failures and fall back to visual reading.
 * Use parallel workers for OCR only with per-worker temp file names.
-* Treat the folder as **live**: the user's browser and cloud sync may add or remove files during the run. Verify against reality, not cached listing
+* Treat the folder as **live**: the user's browser and cloud sync may add or remove files during the run. Verify against reality, not cached listings.
